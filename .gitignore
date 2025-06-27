@@ -1,0 +1,22 @@
+# Archivos generados por Android Studio
+.idea/
+.gradle/
+build/
+*.iml
+*.apk
+*.keystore
+
+# Archivos generados localmente
+.DS_Store
+
+# Archivos de configuración local
+local.properties
+
+# Archivos de caché
+.cache/
+*.log
+*.tmp
+
+# Archivos de dependencias
+*.jar
+*.aar
