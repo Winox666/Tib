@@ -16,7 +16,7 @@ import java.net.Socket;
 public class MainActivity extends AppCompatActivity {
     private EditText etCommand;
     private Button btnSend;
-    private TextView tvGameStatus;
+    private TextView tvGameStatus, tvMap;
     private String playerName = "";
 
     @Override
@@ -24,9 +24,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etCommand = findViewById(R.id.etMessage);
+        etCommand = findViewById(R.id.etCommand);
         btnSend = findViewById(R.id.btnSend);
-        tvGameStatus = findViewById(R.id.tvResponse);
+        tvGameStatus = findViewById(R.id.tvGameStatus);
+        tvMap = findViewById(R.id.tvMap);
 
         // Conexión inicial al servidor para registro
         new ConnectTask().execute();
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 // Recibir mensaje de bienvenida
                 String welcomeMsg = in.readLine();
                 
-                // Enviar nombre de jugador (podría pedirse al usuario)
+                // Enviar nombre de jugador
                 playerName = "JugadorAndroid";
                 out.println(playerName);
                 
@@ -88,7 +89,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            tvGameStatus.setText(result);
+            if (result.startsWith(".") || result.startsWith("#") || result.startsWith("@")) {
+                tvMap.setText(result);
+            } else {
+                tvGameStatus.setText(result);
+            }
         }
     }
 }

@@ -4,26 +4,40 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <TextView
+        android:id="@+id/tvGameStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Estado del Juego"
+        android:textSize="18sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
     <EditText
-        android:id="@+id/etMessage"
+        android:id="@+id/etCommand"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Escribe un mensaje" />
+        android:hint="Introduce un comando"
+        android:layout_below="@id/tvGameStatus"
+        android:layout_marginTop="16dp" />
 
     <Button
         android:id="@+id/btnSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/etMessage"
+        android:text="Enviar"
+        android:layout_below="@id/etCommand"
         android:layout_centerHorizontal="true"
-        android:text="Enviar" />
+        android:layout_marginTop="8dp" />
 
     <TextView
-        android:id="@+id/tvResponse"
+        android:id="@+id/tvMap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Mapa"
+        android:fontFamily="monospace"
+        android:textSize="12sp"
         android:layout_below="@id/btnSend"
         android:layout_marginTop="16dp"
-        android:text="Respuesta del servidor"
-        android:textSize="18sp" />
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
