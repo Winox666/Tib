@@ -100,6 +100,9 @@ public class MainActivity extends AppCompatActivity {
                         int x = Integer.parseInt(coords[0]);
                         int y = Integer.parseInt(coords[1]);
                         gameMapView.setPlayerPosition(x, y);
+                    } else if (response.startsWith("ATTACK:")) {
+                        // Activar animación de ataque
+                        gameMapView.setPlayerAttacking(true);
                     } else {
                         tvGameStatus.setText(response);
                     }

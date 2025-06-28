@@ -2,6 +2,8 @@ package com.example.tibiaclientserver;
 
 import android.content.Context;
 import android.graphics.*;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -9,7 +11,8 @@ import java.util.*;
 
 public class GameMapView extends View {
     private Bitmap mapBitmap;
-    private Bitmap playerSprite, npcSprite, monsterSprite;
+    private AnimationDrawable playerWalkAnimation, playerAttackAnimation;
+    private Bitmap npcSprite, monsterSprite;
     private Paint backgroundPaint;
     private Point playerPosition;
     private List<Point> npcPositions;
@@ -17,6 +20,7 @@ public class GameMapView extends View {
     private float scaleFactor = 1.0f;
     private float translateX = 0f, translateY = 0f;
     private float lastTouchX, lastTouchY;
+    private boolean isPlayerAttacking = false;
 
     public GameMapView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -25,7 +29,8 @@ public class GameMapView extends View {
 
     private void init() {
         backgroundPaint = new Paint();
-        playerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.player_sprite);
+        playerWalkAnimation = (AnimationDrawable) getResources().getDrawable(R.drawable.player_walk_animation);
+        playerAttackAnimation = (AnimationDrawable) getResources().getDrawable(R.drawable.player_attack_animation);
         npcSprite = BitmapFactory.decodeResource(getResources(), R.drawable.npc_sprite);
         monsterSprite = BitmapFactory.decodeResource(getResources(), R.drawable.monster_sprite);
 
@@ -41,6 +46,16 @@ public class GameMapView extends View {
 
     public void setPlayerPosition(int x, int y) {
         playerPosition.set(x, y);
+        invalidate();
+    }
+
+    public void setPlayerAttacking(boolean attacking) {
+        isPlayerAttacking = attacking;
+        if (attacking) {
+            playerAttackAnimation.start();
+        } else {
+            playerWalkAnimation.start();
+        }
         invalidate();
     }
 
@@ -77,7 +92,11 @@ public class GameMapView extends View {
         }
 
         // Dibujar jugador
-        canvas.drawBitmap(playerSprite, playerPosition.x, playerPosition.y, null);
+        Drawable currentPlayerAnimation = isPlayerAttacking ? playerAttackAnimation : playerWalkAnimation;
+        currentPlayerAnimation.setBounds(playerPosition.x, playerPosition.y, 
+            playerPosition.x + playerWalkAnimation.getIntrinsicWidth(), 
+            playerPosition.y + playerWalkAnimation.getIntrinsicHeight());
+        currentPlayerAnimation.draw(canvas);
 
         canvas.restore();
     }
