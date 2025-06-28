@@ -7,29 +7,34 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
+    private TextView tvGameStatus, tvMap, tvQuests, tvGuildInfo;
     private EditText etCommand;
     private Button btnSend;
-    private TextView tvGameStatus, tvMap;
-    private String playerName = "";
+    private Socket socket;
+    private PrintWriter out;
+    private BufferedReader in;
+    private Player player;
+    private World gameWorld;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etCommand = findViewById(R.id.etCommand);
-        btnSend = findViewById(R.id.btnSend);
+        // Inicializar vistas
         tvGameStatus = findViewById(R.id.tvGameStatus);
         tvMap = findViewById(R.id.tvMap);
+        tvQuests = findViewById(R.id.tvQuests);
+        tvGuildInfo = findViewById(R.id.tvGuildInfo);
+        etCommand = findViewById(R.id.etCommand);
+        btnSend = findViewById(R.id.btnSend);
 
-        // Conexión inicial al servidor para registro
+        // Conectar al servidor
         new ConnectTask().execute();
 
         btnSend.setOnClickListener(v -> {
@@ -42,20 +47,20 @@ public class MainActivity extends AppCompatActivity {
     private class ConnectTask extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... voids) {
-            try (Socket socket = new Socket("10.0.2.2", 8080);
-                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-                // Recibir mensaje de bienvenida
-                String welcomeMsg = in.readLine();
+            try {
+                socket = new Socket("10.0.2.2", 7171);
+                out = new PrintWriter(socket.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 
-                // Enviar nombre de jugador
-                playerName = "JugadorAndroid";
-                out.println(playerName);
+                // Recibir datos iniciales del jugador
+                String playerData = in.readLine();
+                player = Player.fromString(playerData);
                 
-                // Recibir confirmación
-                return in.readLine();
+                // Recibir mapa inicial
+                String mapData = in.readLine();
+                gameWorld = World.fromString(mapData);
                 
+                return "Conectado al servidor";
             } catch (IOException e) {
                 return "Error de conexión: " + e.getMessage();
             }
@@ -64,24 +69,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             tvGameStatus.setText(result);
+            updateGameView();
         }
     }
 
     private class GameCommandTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... commands) {
-            try (Socket socket = new Socket("10.0.2.2", 8080);
-                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
+            try {
                 out.println(commands[0]);
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) {
-                    response.append(line).append("\n");
-                }
-                return response.toString();
-                
+                return in.readLine();
             } catch (IOException e) {
                 return "Error: " + e.getMessage();
             }
@@ -89,11 +86,36 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            if (result.startsWith(".") || result.startsWith("#") || result.startsWith("@")) {
-                tvMap.setText(result);
-            } else {
-                tvGameStatus.setText(result);
-            }
+            tvGameStatus.setText(result);
+            updateGameView();
+        }
+    }
+
+    private void updateGameView() {
+        // Actualizar vista del mapa
+        tvMap.setText(gameWorld.getMapAroundPlayer(player));
+        
+        // Actualizar estado del jugador
+        tvGameStatus.setText(player.getStatus());
+        
+        // Actualizar misiones
+        tvQuests.setText(player.getQuestsStatus());
+        
+        // Actualizar información del clan
+        if (player.getGuild() != null) {
+            tvGuildInfo.setText(player.getGuild().getInfo());
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            if (socket != null) socket.close();
+            if (out != null) out.close();
+            if (in != null) in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
