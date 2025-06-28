@@ -1,7 +1,5 @@
 package com.example.tibiaclientserver;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -16,13 +14,14 @@ import java.util.concurrent.*;
 
 public class MainActivity extends AppCompatActivity {
     private GameMapView gameMapView;
-    private TextView tvGameStatus;
+    private TextView tvGameStatus, tvQuestStatus;
     private EditText etCommand;
     private Button btnSend;
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
     private ExecutorService executor;
+    private QuestManager questManager;
     private String playerName = "";
 
     @Override
@@ -32,8 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
         gameMapView = findViewById(R.id.gameMapView);
         tvGameStatus = findViewById(R.id.tvGameStatus);
+        tvQuestStatus = findViewById(R.id.tvQuestStatus);
         etCommand = findViewById(R.id.etCommand);
         btnSend = findViewById(R.id.btnSend);
+
+        // Inicializar QuestManager
+        questManager = new QuestManager();
+        initializeQuests();
 
         // Cargar mapa de prueba
         Bitmap mapBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.map);
@@ -50,6 +54,15 @@ public class MainActivity extends AppCompatActivity {
             executor.execute(new GameCommandTask(command));
             etCommand.setText("");
         });
+    }
+
+    private void initializeQuests() {
+        Quest mainQuest = new Quest("main_quest", "La Llamada del Héroe", "Completa la misión principal para salvar el reino.");
+        mainQuest.addObjective("Habla con el Rey");
+        mainQuest.addObjective("Derrota al Jefe Final");
+        mainQuest.addReward("Espada Legendaria");
+        mainQuest.addReward("1000 de oro");
+        questManager.addQuest(mainQuest);
     }
 
     private class ConnectTask extends AsyncTask<Void, Void, String> {
@@ -100,9 +113,10 @@ public class MainActivity extends AppCompatActivity {
                         int x = Integer.parseInt(coords[0]);
                         int y = Integer.parseInt(coords[1]);
                         gameMapView.setPlayerPosition(x, y);
-                    } else if (response.startsWith("ATTACK:")) {
-                        // Activar animación de ataque
-                        gameMapView.setPlayerAttacking(true);
+                    } else if (response.startsWith("QUEST:")) {
+                        // Actualizar estado de la misión
+                        String questId = response.substring(6);
+                        tvQuestStatus.setText(questManager.getQuestStatus(questId));
                     } else {
                         tvGameStatus.setText(response);
                     }
