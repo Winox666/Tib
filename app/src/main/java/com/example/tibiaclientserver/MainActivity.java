@@ -1,5 +1,7 @@
 package com.example.tibiaclientserver;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -9,10 +11,12 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import java.io.*;
 import java.net.Socket;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView tvGameStatus, tvMap;
+    private GameMapView gameMapView;
+    private TextView tvGameStatus;
     private EditText etCommand;
     private Button btnSend;
     private Socket socket;
@@ -26,10 +30,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        gameMapView = findViewById(R.id.gameMapView);
         tvGameStatus = findViewById(R.id.tvGameStatus);
-        tvMap = findViewById(R.id.tvMap);
         etCommand = findViewById(R.id.etCommand);
         btnSend = findViewById(R.id.btnSend);
+
+        // Cargar mapa de prueba
+        Bitmap mapBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.map);
+        gameMapView.setMap(mapBitmap);
 
         // Configurar el executor para manejar conexiones
         executor = Executors.newFixedThreadPool(4);
@@ -86,8 +94,12 @@ public class MainActivity extends AppCompatActivity {
                 out.println(command);
                 String response = in.readLine();
                 runOnUiThread(() -> {
-                    if (response.startsWith(".") || response.startsWith("#") || response.startsWith("@")) {
-                        tvMap.setText(response);
+                    if (response.startsWith("POS:")) {
+                        // Actualizar posición del jugador
+                        String[] coords = response.substring(4).split(",");
+                        int x = Integer.parseInt(coords[0]);
+                        int y = Integer.parseInt(coords[1]);
+                        gameMapView.setPlayerPosition(x, y);
                     } else {
                         tvGameStatus.setText(response);
                     }

@@ -3,50 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@drawable/background">
+    android:background="@color/dark_background">
 
-    <!-- Barra de estado -->
-    <LinearLayout
-        android:id="@+id/statusBar"
+    <!-- Mapa del juego -->
+    <com.example.tibiaclientserver.GameMapView
+        android:id="@+id/gameMapView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="#80000000">
-
-        <TextView
-            android:id="@+id/tvHealth"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Salud: 100"
-            android:textColor="#FF0000"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tvMana"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Maná: 50"
-            android:textColor="#0000FF"
-            android:textSize="16sp"
-            android:textAlignment="textEnd" />
-    </LinearLayout>
-
-    <!-- Área del juego -->
-    <FrameLayout
-        android:id="@+id/gameArea"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_below="@id/statusBar"
-        android:layout_above="@id/controls"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="#20000000">
-
-        <!-- Aquí irían los elementos gráficos del juego -->
-    </FrameLayout>
+        android:layout_height="match_parent"
+        android:layout_above="@+id/controls" />
 
     <!-- Controles -->
     <LinearLayout
@@ -55,22 +19,30 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
-        android:padding="8dp"
-        android:background="#80000000">
+        android:background="@color/control_background"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/tvGameStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
 
         <EditText
             android:id="@+id/etCommand"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Introduce un comando"
-            android:inputType="text"
-            android:maxLines="1" />
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray" />
 
         <Button
             android:id="@+id/btnSend"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Enviar"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/primary" />
     </LinearLayout>
 </RelativeLayout>
