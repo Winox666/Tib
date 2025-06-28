@@ -9,37 +9,37 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import java.io.*;
 import java.net.Socket;
-import java.util.*;
+import java.util.concurrent.*;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView tvGameStatus, tvMap, tvQuests, tvGuildInfo;
+    private TextView tvGameStatus, tvMap;
     private EditText etCommand;
     private Button btnSend;
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
-    private Player player;
-    private World gameWorld;
+    private ExecutorService executor;
+    private String playerName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicializar vistas
         tvGameStatus = findViewById(R.id.tvGameStatus);
         tvMap = findViewById(R.id.tvMap);
-        tvQuests = findViewById(R.id.tvQuests);
-        tvGuildInfo = findViewById(R.id.tvGuildInfo);
         etCommand = findViewById(R.id.etCommand);
         btnSend = findViewById(R.id.btnSend);
+
+        // Configurar el executor para manejar conexiones
+        executor = Executors.newFixedThreadPool(4);
 
         // Conectar al servidor
         new ConnectTask().execute();
 
         btnSend.setOnClickListener(v -> {
             String command = etCommand.getText().toString();
-            new GameCommandTask().execute(command);
+            executor.execute(new GameCommandTask(command));
             etCommand.setText("");
         });
     }
@@ -48,19 +48,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Void... voids) {
             try {
-                socket = new Socket("10.0.2.2", 7171);
+                socket = new Socket("10.0.2.2", 8080);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 
-                // Recibir datos iniciales del jugador
-                String playerData = in.readLine();
-                player = Player.fromString(playerData);
+                // Recibir mensaje de bienvenida
+                String welcomeMsg = in.readLine();
                 
-                // Recibir mapa inicial
-                String mapData = in.readLine();
-                gameWorld = World.fromString(mapData);
+                // Enviar nombre de jugador
+                playerName = "JugadorAndroid";
+                out.println(playerName);
                 
-                return "Conectado al servidor";
+                // Recibir confirmación
+                return in.readLine();
+                
             } catch (IOException e) {
                 return "Error de conexión: " + e.getMessage();
             }
@@ -69,47 +70,38 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             tvGameStatus.setText(result);
-            updateGameView();
         }
     }
 
-    private class GameCommandTask extends AsyncTask<String, Void, String> {
+    private class GameCommandTask implements Runnable {
+        private String command;
+
+        public GameCommandTask(String command) {
+            this.command = command;
+        }
+
         @Override
-        protected String doInBackground(String... commands) {
+        public void run() {
             try {
-                out.println(commands[0]);
-                return in.readLine();
+                out.println(command);
+                String response = in.readLine();
+                runOnUiThread(() -> {
+                    if (response.startsWith(".") || response.startsWith("#") || response.startsWith("@")) {
+                        tvMap.setText(response);
+                    } else {
+                        tvGameStatus.setText(response);
+                    }
+                });
             } catch (IOException e) {
-                return "Error: " + e.getMessage();
+                runOnUiThread(() -> tvGameStatus.setText("Error: " + e.getMessage()));
             }
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            tvGameStatus.setText(result);
-            updateGameView();
-        }
-    }
-
-    private void updateGameView() {
-        // Actualizar vista del mapa
-        tvMap.setText(gameWorld.getMapAroundPlayer(player));
-        
-        // Actualizar estado del jugador
-        tvGameStatus.setText(player.getStatus());
-        
-        // Actualizar misiones
-        tvQuests.setText(player.getQuestsStatus());
-        
-        // Actualizar información del clan
-        if (player.getGuild() != null) {
-            tvGuildInfo.setText(player.getGuild().getInfo());
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        executor.shutdown();
         try {
             if (socket != null) socket.close();
             if (out != null) out.close();
