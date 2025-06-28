@@ -2,42 +2,75 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/background">
 
-    <TextView
-        android:id="@+id/tvGameStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Estado del Juego"
-        android:textSize="18sp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-    <EditText
-        android:id="@+id/etCommand"
+    <!-- Barra de estado -->
+    <LinearLayout
+        android:id="@+id/statusBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Introduce un comando"
-        android:layout_below="@id/tvGameStatus"
-        android:layout_marginTop="16dp" />
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="#80000000">
 
-    <Button
-        android:id="@+id/btnSend"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enviar"
-        android:layout_below="@id/etCommand"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp" />
+        <TextView
+            android:id="@+id/tvHealth"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Salud: 100"
+            android:textColor="#FF0000"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/tvMap"
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tvMana"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Maná: 50"
+            android:textColor="#0000FF"
+            android:textSize="16sp"
+            android:textAlignment="textEnd" />
+    </LinearLayout>
+
+    <!-- Área del juego -->
+    <FrameLayout
+        android:id="@+id/gameArea"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/statusBar"
+        android:layout_above="@id/controls"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#20000000">
+
+        <!-- Aquí irían los elementos gráficos del juego -->
+    </FrameLayout>
+
+    <!-- Controles -->
+    <LinearLayout
+        android:id="@+id/controls"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mapa"
-        android:fontFamily="monospace"
-        android:textSize="12sp"
-        android:layout_below="@id/btnSend"
-        android:layout_marginTop="16dp"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:background="#80000000">
+
+        <EditText
+            android:id="@+id/etCommand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Introduce un comando"
+            android:inputType="text"
+            android:maxLines="1" />
+
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enviar"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
 </RelativeLayout>
