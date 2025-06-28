@@ -9,7 +9,8 @@ import java.util.*;
 
 public class GameMapView extends View {
     private Bitmap mapBitmap;
-    private Paint playerPaint, npcPaint, monsterPaint;
+    private Bitmap playerSprite, npcSprite, monsterSprite;
+    private Paint backgroundPaint;
     private Point playerPosition;
     private List<Point> npcPositions;
     private List<Point> monsterPositions;
@@ -23,17 +24,10 @@ public class GameMapView extends View {
     }
 
     private void init() {
-        playerPaint = new Paint();
-        playerPaint.setColor(Color.BLUE);
-        playerPaint.setStyle(Paint.Style.FILL);
-
-        npcPaint = new Paint();
-        npcPaint.setColor(Color.GREEN);
-        npcPaint.setStyle(Paint.Style.FILL);
-
-        monsterPaint = new Paint();
-        monsterPaint.setColor(Color.RED);
-        monsterPaint.setStyle(Paint.Style.FILL);
+        backgroundPaint = new Paint();
+        playerSprite = BitmapFactory.decodeResource(getResources(), R.drawable.player_sprite);
+        npcSprite = BitmapFactory.decodeResource(getResources(), R.drawable.npc_sprite);
+        monsterSprite = BitmapFactory.decodeResource(getResources(), R.drawable.monster_sprite);
 
         playerPosition = new Point(0, 0);
         npcPositions = new ArrayList<>();
@@ -68,20 +62,22 @@ public class GameMapView extends View {
         canvas.save();
         canvas.scale(scaleFactor, scaleFactor);
         canvas.translate(translateX, translateY);
-        canvas.drawBitmap(mapBitmap, 0, 0, null);
 
-        // Dibujar jugador
-        canvas.drawCircle(playerPosition.x, playerPosition.y, 10, playerPaint);
+        // Dibujar mapa
+        canvas.drawBitmap(mapBitmap, 0, 0, backgroundPaint);
 
         // Dibujar NPCs
         for (Point npc : npcPositions) {
-            canvas.drawCircle(npc.x, npc.y, 8, npcPaint);
+            canvas.drawBitmap(npcSprite, npc.x, npc.y, null);
         }
 
         // Dibujar monstruos
         for (Point monster : monsterPositions) {
-            canvas.drawCircle(monster.x, monster.y, 8, monsterPaint);
+            canvas.drawBitmap(monsterSprite, monster.x, monster.y, null);
         }
+
+        // Dibujar jugador
+        canvas.drawBitmap(playerSprite, playerPosition.x, playerPosition.y, null);
 
         canvas.restore();
     }
@@ -101,9 +97,6 @@ public class GameMapView extends View {
                 lastTouchX = event.getX();
                 lastTouchY = event.getY();
                 invalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-                // Manejar zoom si es necesario
                 break;
         }
         return true;
